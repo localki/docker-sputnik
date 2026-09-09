@@ -31,4 +31,6 @@ COPY --from=tools-builder /src/src/wg /usr/bin/awg
 RUN chmod +x /usr/bin/amneziawg-go /usr/bin/awg
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
+HEALTHCHECK --interval=60s --timeout=10s --start-period=180s --retries=3 \
+    CMD sh -c 'now=$(date +%s); found=0; for d in /sys/class/net/awg*; do [ -e "$d" ] || continue; found=1; iface=$(basename "$d"); if ! awg show "$iface" latest-handshakes 2>/dev/null | awk -v now="$now" "{ if ($2 + 600 < now) exit 1 }"; then exit 1; fi; done; [ "$found" = "1" ]'
 ENTRYPOINT ["/app/entrypoint.sh"]

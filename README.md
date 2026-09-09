@@ -42,3 +42,21 @@ docker logs -f sputnik   # handshakes every 60 seconds
 Multiple tunnels: mount a directory of `.conf` files at `/etc/awg`
 instead of a single file. `DRYRUN=1` prints all commands without
 executing anything.
+
+## Monitoring
+
+```bash
+docker logs -f sputnik        # handshake timestamps every 60 seconds
+docker inspect --format '{{.State.Health.Status}}' sputnik
+```
+
+The image carries a `HEALTHCHECK`: every 60 seconds (after a 3-minute
+start period) it requires a handshake no older than 10 minutes on every
+tunnel interface. `unhealthy` means the tunnel is down — check the logs.
+
+## Uninstall
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/localki/docker-sputnik/main/uninstall.sh | sh
+sh uninstall.sh --purge   # also image, sources and config (asks first)
+```
