@@ -1,5 +1,38 @@
 # Sputnik — compact AmneziaWG entry/exit node (~20 MB)
 
+Prebuilt multi-arch images (amd64, arm64, arm32v7) land in GHCR on every
+push to main — no build needed on the device:
+
+```bash
+docker run -d --name sputnik --restart unless-stopped \
+  --cap-add NET_ADMIN --device /dev/net/tun \
+  -v ./awg.conf:/etc/awg/client.conf:ro \
+  -e FORWARD_PORTS='8123>192.168.1.10:8123' \
+  ghcr.io/localki/docker-sputnik:latest
+```
+
+Or with compose (`docker compose up -d`):
+
+```yaml
+services:
+  sputnik:
+    image: ghcr.io/localki/docker-sputnik:latest
+    container_name: sputnik
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    volumes:
+      - ./awg.conf:/etc/awg/client.conf:ro
+    environment:
+      ENTRY_MODE: lan
+      FORWARD_PORTS: '8123>192.168.1.10:8123'
+```
+
+`awg.conf` comes from the BigPing bot (profile screen, «📄 awg.conf» button).
+To build locally instead: `docker build -t sputnik .`
+
 One container holds a persistent AmneziaWG 3.1 tunnel per `.conf`
 (`awg0`, `awg1`, …) and turns its host into either a LAN entry point
 (port-forward LAN services into your BigPing local network) or an
