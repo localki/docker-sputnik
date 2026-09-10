@@ -17,7 +17,9 @@
 #       is ON. A both-on or unknown profile must stay in lan mode.
 #
 # Required mounts/env:
-#   /etc/awg/*.conf  - .conf files downloaded from the BigPing bot
+#   /etc/awg/*.conf  - .conf files downloaded from the BigPing bot, or
+#   AWG_CONF_CONTENT - full .conf text inline (written to client.conf first;
+#                      lets `docker run` carry the profile with no files)
 #   FORWARD_PORTS    - lan mode: "8123>192.168.1.10:8123,22>192.168.1.10"
 #                      (applied to every tunnel interface)
 #   LAN_IF           - LAN interface (auto-detected from default route
@@ -44,6 +46,16 @@ run() {
 }
 
 case "$MODE" in lan|inet) ;; *) die "ENTRY_MODE must be 'lan' or 'inet', got '$MODE'";; esac
+
+if [ -n "${AWG_CONF_CONTENT:-}" ]; then
+    if [ "$DRYRUN" = "1" ]; then
+        CONF_DIR="$(mktemp -d)"
+    else
+        mkdir -p "$CONF_DIR"
+    fi
+    printf '%s\n' "$AWG_CONF_CONTENT" >"$CONF_DIR/client.conf"
+    chmod 600 "$CONF_DIR/client.conf"
+fi
 
 if [ -n "$SINGLE_CONF" ]; then
     [ -f "$SINGLE_CONF" ] || die "client config not found: $SINGLE_CONF (mount it there)"
@@ -219,7 +231,7 @@ fi
 IFACES=""
 idx=0
 for conf in $CONFS; do
-    if [ -n "$SINGLE_CONF" ]; then
+if [ -n "$SINGLE_CONF" ]; then
         iface="$IFACE_BASE"
     else
         iface="awg$idx"
