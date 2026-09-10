@@ -20,6 +20,10 @@ Requirements on the host: Docker, python3 (to decode the link), git,
 
 ## Modes (no auto-guessing, no exceptions)
 
+Bot profile flags map to modes like this: LAN on + internet off =
+🛰 Спутник; LAN off + internet on = 🚇 Тоннель; both on = 🔀 Гибрид;
+both off = 👻 Невидимка (reachable, sees nobody).
+
 - `ENTRY_MODE=lan` (default) — entry point into the home LAN. Use only
   with a profile whose internet exit is **OFF**. `FORWARD_PORTS` is
   required, e.g. `8123>192.168.1.10:8123`.
